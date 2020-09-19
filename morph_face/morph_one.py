@@ -5,6 +5,9 @@ import urllib.request as urlreq
 import numpy as np
 from pylab import rcParams
 from scipy.spatial import Delaunay
+import sys
+
+from point_finder import PointFinder
 
 lbfmodel_url = "https://github.com/kurnianggoro/GSOC2017/raw/master/data/lbfmodel.yaml"
 haarcascade_url = "https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt2.xml"
@@ -12,68 +15,12 @@ haarcascade_url = "https://raw.githubusercontent.com/opencv/opencv/master/data/h
 LBFmodel = "models/lbfmodel.yaml"
 haarcascade = "models/haarcascade.xml"
 
-def downloadModels():
-    if (haarcascade[7:] in os.listdir(os.curdir + "/models")):
-        print("Haar Cascade Already Downloaded")
-    else:
-        print("Haar Cascate not found. Downloading...")
-
-        urlreq.urlretrieve(haarcascade_url, haarcascade)
-
-        print("Finished Downloading")
-    
-    if (LBFmodel[7:] in os.listdir(os.curdir + "/models")):
-        print("LBFModel Already Downloaded")
-    else:
-        print("LBF Model not found. Downloading...")
-
-        urlreq.urlretrieve(lbfmodel_url, LBFmodel)
-
-        print("Finished Downloading")
-
-def getTriangulation(pic):
-    def detectFace():
-        detector = cv2.CascadeClassifier(haarcascade)
-        faces = detector.detectMultiScale(image_grayscale)
-
-        #draw face
-        if(len(faces) > 0):
-            face = faces[0]
-            (x,y,w,d) = face
-
-            rectImage = np.zeros((image.shape[0], image.shape[1], 4), np.uint8)
-            rectImage[:, :, 3] = 0
-            cv2.rectangle(rectImage, (x,y), (x+w, y+d), (255, 255, 255), 2)
-
-            return np.array([face])
-        
-        print("Couldn't find a face")
-        exit(-1)
-
-    def detectLandmarks(face):
-        landmark_detector  = cv2.face.createFacemarkLBF()
-        landmark_detector.loadModel(LBFmodel)
-
-        _, landmarks = landmark_detector.fit(image_grayscale, face)
-
-        landmarkArr = []
-        points = []
-        for landmark in landmarks:
-            for x,y in landmark[0]:
-                landmarkArr.append([x , y])
-                points.append((x,y))
-        
-        return landmarkArr, np.array(points, np.int32)
-
-    image = cv2.cvtColor(cv2.imread(pic), cv2.COLOR_BGR2RGB)
-
-    image_grayscale = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
-
+def getTriangulation(pf):
     # detect face with haar cascade
-    face = detectFace()
+    face = pf.detectFace()
 
     # find landmarks in the face with lbf model
-    landmarks, convex = detectLandmarks(face)
+    landmarks, convex = pf.detectLandmarks(face)
 
     # calculate delaunay triangulation. note: this is just 
     # indecies of vertecies not actually 
@@ -81,7 +28,7 @@ def getTriangulation(pic):
     delaunayTriangles = Delaunay(landmarks)
     triangluation = delaunayTriangles.simplices
 
-    return triangluation, landmarks, image, convex
+    return triangluation, landmarks, pf.getImage(), convex
 
 def applyMask(b, m):
     h = b.shape[0]
@@ -110,12 +57,18 @@ def overlay(b, o):
                 b[y, x] = o[y, x]
 
 if __name__ == "__main__":
-    # downloadModels()
+
     pic1 = "2.jpg"
     pic2 = "1.jpg"
+    
+    pf1 = PointFinder(pic1)
+    pf2 = PointFinder(pic2)
 
-    tri1, landmarks, image, convex = getTriangulation(pic1)
-    tri2, landmarks2, image1, convex = getTriangulation(pic2)
+    tri1, landmarks, image, convex = getTriangulation(pf1)
+    tri2, landmarks2, image1, convex = getTriangulation(pf2)
+
+    for point in convex:
+        print(point)
 
     b, g, r = cv2.split(image1)
 
