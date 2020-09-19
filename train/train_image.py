@@ -25,11 +25,7 @@ def getTriangulation(pf):
 
     return triangluation, landmarks, pf.getImage(), convex
 
-if __name__ == "__main__":
-
-    pic1 = "2.jpg"
-    pic2 = "1.jpg"
-    
+def train_image(pic1, pic2):
     pf1 = PointFinder(pic1)
     pf2 = PointFinder(pic2)
 
@@ -88,11 +84,13 @@ if __name__ == "__main__":
         
         count += 1
 
-    # save image
+    return outputImage
+
+if __name__ == "__main__":
+    #make image
+    outputImage = train_image("2.jpg", "1.jpg")
 
     plt.imshow(outputImage)
-    cv2.imwrite('og.png', masked)
-    cv2.imwrite('warped.png', warped)
     cv2.imwrite('output.jpg', cv2.cvtColor(outputImage, cv2.COLOR_RGB2BGR))
 
     plt.show(block=True)
