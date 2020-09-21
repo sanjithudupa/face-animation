@@ -1,0 +1,8 @@
+{
+    "viseme_groups": {
+        "closed":[ "closed", "m", "f"],
+        "wide":[ "wide", "n"],
+        "lips":[ "lips", "w", "r"],
+        "open":[ "open", "ow", "wideopen", "aw"]
+    }
+}
