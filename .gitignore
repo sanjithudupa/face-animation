@@ -4,3 +4,5 @@
 morph_face/.DS_Store
 *.pyc
 *.mp4
+train/models/lbfmodel.yaml
+train/models/haarcascade.xml
