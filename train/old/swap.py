@@ -33,6 +33,8 @@ def downloadModels():
 
 def getTriangulation(pic):
     def detectFace():
+        image_grayscale = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
+
         detector = cv2.CascadeClassifier(haarcascade)
         faces = detector.detectMultiScale(image_grayscale)
 
@@ -51,6 +53,9 @@ def getTriangulation(pic):
         exit(-1)
 
     def detectLandmarks(face):
+        image_grayscale = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
+
+
         landmark_detector  = cv2.face.createFacemarkLBF()
         landmark_detector.loadModel(LBFmodel)
 
@@ -58,16 +63,20 @@ def getTriangulation(pic):
 
         landmarkArr = []
         points = []
+        count = 0
         for landmark in landmarks:
             for x,y in landmark[0]:
                 landmarkArr.append([x , y])
                 points.append((x,y))
+
+                plt.text(x, y, str(count))
+            count += 1
         
         return landmarkArr, np.array(points, np.int32)
 
     image = cv2.cvtColor(cv2.imread(pic), cv2.COLOR_BGR2RGB)
 
-    image_grayscale = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
+    # image_grayscale = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
 
     # detect face with haar cascade
     face = detectFace()
@@ -113,6 +122,21 @@ if __name__ == "__main__":
     # downloadModels()
     pic1 = "2.jpg"
     pic2 = "1.jpg"
+
+    # pic = cv2.imread(pic1)
+
+    # plt.imshow(pic)
+
+    # _, _, image, landmarks, = getTriangulation(pic1)
+
+    # plt.imshow(image)
+
+    # count = -1
+    # for landmark in landmarks:
+    #     count += 1
+    #     for x,y in landmark:
+    #         plt.text(x, y, count)
+        
 
     tri1, landmarks, image, convex = getTriangulation(pic1)
     tri2, landmarks2, image1, convex = getTriangulation(pic2)

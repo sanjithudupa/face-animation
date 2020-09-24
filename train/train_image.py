@@ -25,7 +25,7 @@ def getTriangulation(pf):
 
     return triangluation, landmarks, pf.getImage(), convex
 
-def train_image(pic1, pic2):
+def train_image(pic1, pic2, alpha):
     pf1 = PointFinder(pic1)
     pf2 = PointFinder(pic2)
 
@@ -45,9 +45,16 @@ def train_image(pic1, pic2):
 
     count = 0
 
+    landmarks3 = []
+
+    for i in range(0, len(landmarks)):
+        x = ( 1 - alpha ) * landmarks2[i][0] + alpha * landmarks2[i][0]
+        y = ( 1 - alpha ) * landmarks2[i][1] + alpha * landmarks2[i][1]
+        landmarks3.append((x,y))
+
     for tri in tri1:
         first = np.float32([landmarks[tri[0]], landmarks[tri[1]], landmarks[tri[2]]])
-        second = np.float32([landmarks2[tri[0]], landmarks2[tri[1]], landmarks2[tri[2]]])
+        second = np.float32([landmarks3[tri[0]], landmarks3[tri[1]], landmarks3[tri[2]]])
 
         r1 = cv2.boundingRect(first)
         r2 = cv2.boundingRect(second)
@@ -88,7 +95,7 @@ def train_image(pic1, pic2):
 
 if __name__ == "__main__":
     #make image
-    outputImage = train_image("2.jpg", "1.jpg")
+    outputImage = train_image("2.jpg", "1.jpg", 1)
 
     plt.imshow(outputImage)
     cv2.imwrite('output.jpg', cv2.cvtColor(outputImage, cv2.COLOR_RGB2BGR))
