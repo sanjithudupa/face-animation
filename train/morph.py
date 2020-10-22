@@ -85,8 +85,8 @@ def morph(first, second, triangulation, image, image1, alpha):
     return np.uint8(outputImage)
 
 if __name__ == "__main__":
-    filename = '2.jpg'
-    filename1 = '1.jpg'
+    filename = 'test1.jpg'
+    filename1 = 'test2.jpg'
 
     pf = PointFinder(filename)
     pf1 = PointFinder(filename1)
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     
     video = cv2.VideoWriter('video.mp4', cv2.VideoWriter_fourcc(*'mp4v') , 20,(width, height))
 
-    for alpha in range(0, 20):
-        video.write(morph(points1, points2, triangulation, image, image1, alpha/20))
+    for alpha in range(0, 10):
+        video.write(morph(points1, points2, triangulation, image, image1, alpha/10))
     
     video.release()
