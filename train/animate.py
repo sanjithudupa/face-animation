@@ -1,4 +1,3 @@
-
 import numpy as np
 import cv2
 import sys
@@ -6,22 +5,17 @@ import timeit
 import os
 from scipy.spatial import Delaunay
 
-from point_finder import PointFinder
+def getTriangulationFromFile(filename):
+    triangluation_str = open("positions/triangulation/" + filename + ".txt", "r").read()
+    convex_str = open("positions/convex/" + filename + ".txt", "r").read()
 
-def getTriangulation(pf):
-    # detect face with haar cascade
-    face = pf.detectFace()
+    triangulation = np.array([line.split(' ') for line in triangluation_str.split("\n")], np.int32)
+    convex = np.array([line.split(' ') for line in convex_str.split("\n")], np.int32)
 
-    # find landmarks in the face with lbf model
-    landmarks, convex, num_points = pf.detectLandmarks(face)
+    fname = "positions/pictures/" + filename + ".jpg"
 
-    # calculate delaunay triangulation. note: this is just 
-    # indecies of vertecies not actually 
-    # the vertex positions themselves
-    delaunayTriangles = Delaunay(landmarks)
-    triangluation = delaunayTriangles.simplices
-
-    return triangluation, landmarks, pf.getImage(), convex
+    print(fname)
+    return triangulation, convex, fname
 
 def morphTriangle(image, image1, outputImage, first, second, alpha) :
     r1 = cv2.boundingRect(np.float32(first))
@@ -56,8 +50,8 @@ def morph(first, second, triangulation, image, image1, alpha):
 
     # Compute weighted average point coordinates
     for i in range(0, len(first)):
-        x = ( 1 - alpha ) * first[i][0] + (alpha) * second[i][0]
-        y = ( 1 - alpha ) * first[i][1] + (alpha) * second[i][1]
+        x = ( 1 - alpha ) * first[i][0] + alpha * second[i][0]
+        y = ( 1 - alpha ) * first[i][1] + alpha * second[i][1]
         points.append((x,y))
 
     b, g, r = cv2.split(image)
@@ -85,15 +79,12 @@ def morph(first, second, triangulation, image, image1, alpha):
     return np.uint8(outputImage)
 
 if __name__ == "__main__":
-    filename = 'closed'
-    filename1 = 'test2'
-
-    pf = PointFinder(filename)
-    pf1 = PointFinder(filename1)
+    start = 'open'
+    end = 'wide'
 
     # Read array of corresponding points
-    triangulation, _, _, convex = getTriangulation(pf)
-    _, _, _, convex1 = getTriangulation(pf1)
+    triangulation, convex, filename = getTriangulationFromFile(start)
+    _, convex1, filename1 = getTriangulationFromFile(end)
 
     image = np.float32(cv2.imread(filename))
     image1 = np.float32(cv2.imread(filename1))
@@ -103,7 +94,7 @@ if __name__ == "__main__":
 
     height,width,layers= image.shape
     
-    video = cv2.VideoWriter('video.mp4', cv2.VideoWriter_fourcc(*'mp4v') , 20,(width, height))
+    video = cv2.VideoWriter('out.mp4', cv2.VideoWriter_fourcc(*'mp4v') , 20,(width, height))
 
     for alpha in range(0, 10):
         video.write(morph(points1, points2, triangulation, image, image1, alpha/10))

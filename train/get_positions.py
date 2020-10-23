@@ -51,7 +51,7 @@ while(True):
         pf = PointFinder(frame)
         triangluation, landmarks, image, convex, = getTriangulation(pf)
         if picture in need_pics:
-            cv2.imwrite("positions/pictures/" + picture + ".png", cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            cv2.imwrite("positions/pictures/" + picture + ".jpg", cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         
         triangulation_str = "\n".join([" ".join(str(dimension) for dimension in point) for point in triangluation])
         convex_str = "\n".join([" ".join(str(dimension) for dimension in point) for point in convex])
