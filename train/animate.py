@@ -4,6 +4,7 @@ import sys
 import timeit
 import os
 from scipy.spatial import Delaunay
+import json
 
 def getTriangulationFromFile(filename):
     triangluation_str = open("positions/triangulation/" + filename + ".txt", "r").read()
@@ -12,10 +13,15 @@ def getTriangulationFromFile(filename):
     triangulation = np.array([line.split(' ') for line in triangluation_str.split("\n")], np.int32)
     convex = np.array([line.split(' ') for line in convex_str.split("\n")], np.int32)
 
-    fname = "positions/pictures/" + filename + ".jpg"
+    return triangulation, convex
 
-    print(fname)
-    return triangulation, convex, fname
+def getImage(viseme): 
+    for key, value in viseme_groups.items(): 
+         if viseme in value: 
+             fname = key
+             return fname
+  
+    return None
 
 def morphTriangle(image, image1, outputImage, first, second, alpha) :
     r1 = cv2.boundingRect(np.float32(first))
@@ -79,15 +85,22 @@ def morph(first, second, triangulation, image, image1, alpha):
     return np.uint8(outputImage)
 
 if __name__ == "__main__":
-    start = 'open'
-    end = 'wide'
+
+    with open("../research/viseme_groups.json") as f:
+        viseme_groups = json.load(f)['viseme_groups']
+
+    start = 'lips'
+    end = 'w'
+
+    main_image = getImage(start)
+    main_image1 = getImage(end)
 
     # Read array of corresponding points
-    triangulation, convex, filename = getTriangulationFromFile(start)
-    _, convex1, filename1 = getTriangulationFromFile(end)
+    triangulation, convex = getTriangulationFromFile(start)
+    _, convex1 = getTriangulationFromFile(end)
 
-    image = np.float32(cv2.imread(filename))
-    image1 = np.float32(cv2.imread(filename1))
+    image = np.float32(cv2.imread("positions/pictures/" + main_image + ".jpg"))
+    image1 = np.float32(cv2.imread("positions/pictures/" + main_image1 + ".jpg"))
 
     points1 = convex
     points2 = convex1
